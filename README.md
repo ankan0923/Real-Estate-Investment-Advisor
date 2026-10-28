@@ -6,6 +6,8 @@ EstateIQ is an end-to-end data science platform built to evaluate property profi
 ---
 
 ## 📌 Executive Summary
+**[Explore the live dashboard](https://real-estate-investment-advisor-9gssv37yrafbgh3wwiezbg.streamlit.app/)**
+
 
 Investing in real estate requires evaluating dozens of interdependent variables—ranging from price per square foot and property age to neighborhood infrastructure and regional growth rates. Comparing properties manually often leads to inconsistent decisions.
 
