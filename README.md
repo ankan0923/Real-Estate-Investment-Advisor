@@ -191,7 +191,7 @@ Navigate to `http://127.0.0.1:5000` to inspect experiment runs, compare paramete
 
 ## 👨‍💻 Author
 
-**Ankan**  
+**Ankan Chowdhury**  
 *Data Science & Machine Learning Enthusiast*  
 Interested in predictive analytics, real-world machine learning systems, and interactive business intelligence.
 
