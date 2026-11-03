@@ -177,9 +177,32 @@ def _load_bundle(mtime: float):
     return hp.load_bundle()
 
 
+AUTO_TRAIN_ROWS = 20000   # small sample keeps memory low on free hosting
+
+
+@st.cache_resource(show_spinner="Training the models for the first time (1-2 minutes)…")
+def _auto_train():
+    """Train once when no saved model file exists (e.g. on Streamlit Cloud)."""
+    bundle = hp.train_all(DF, REF, max_rows=AUTO_TRAIN_ROWS, log_mlflow=False)
+    try:
+        hp.save_bundle(bundle)
+    except Exception as exc:  # read-only disk: keep the bundle in memory only
+        print(f"[auto_train] could not save bundle: {exc}", flush=True)
+    return bundle
+
+
 def current_bundle():
     mt = hp.BUNDLE_PATH.stat().st_mtime if hp.BUNDLE_PATH.exists() else 0.0
-    return _load_bundle(mt)
+    bundle = _load_bundle(mt)
+    if bundle is None and not st.session_state.get("auto_train_failed"):
+        try:
+            bundle = _auto_train()
+        except Exception as exc:
+            st.session_state["auto_train_failed"] = True
+            st.error(f"Automatic training failed: {exc}. Open the Model Lab page to retry "
+                     "with fewer rows, or commit a trained models/model_bundle.joblib file.")
+            return None
+    return bundle
 
 
 data_path = hp.find_dataset()
@@ -1046,6 +1069,8 @@ def page_model_lab():
             bundle = hp.train_all(DF, REF, max_rows=rows, log_mlflow=use_mlflow, progress=cb)
             hp.save_bundle(bundle)
             _load_bundle.clear()
+            _auto_train.clear()
+            st.session_state.pop("auto_train_failed", None)
             st.session_state["train_notice"] = (
                     f"Models trained on {bundle['train_rows']:,} rows and saved. "
                     + (f"{bundle['mlflow']['runs']} MLflow runs logged." if bundle["mlflow"]["enabled"]
