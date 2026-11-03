@@ -11,7 +11,7 @@ The Streamlit app loads the saved models from ./models/model_bundle.joblib.
 import argparse
 import time
 
-import housing_pipeline as hp
+import Housing_pipeline as hp
 
 
 def main():
