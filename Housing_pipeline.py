@@ -73,7 +73,7 @@ RANDOM_STATE = 42
 HORIZON_YEARS = 5
 BASE_GROWTH = 0.08            # fixed-rate example from the project brief (r = 8%)
 GOOD_SCORE_THRESHOLD = 3      # properties meeting >= 3 of 5 criteria are "Good"
-DEFAULT_TRAIN_ROWS = 60000    # random sample used for model training (speed)
+DEFAULT_TRAIN_ROWS = 30000    # random sample used for model training (speed / memory)
 CURRENT_YEAR = datetime.now().year
 
 NUMERIC_RAW = [
@@ -627,13 +627,19 @@ def save_bundle(bundle: dict) -> Path:
 
 
 def load_bundle() -> dict | None:
+    """Load the saved models. Problems are printed so they show up in the app logs."""
     if not BUNDLE_PATH.exists():
+        print(f"[load_bundle] model file not found: {BUNDLE_PATH}", flush=True)
         return None
     try:
         bundle = joblib.load(BUNDLE_PATH)
-    except Exception:
+    except Exception as exc:
+        print(f"[load_bundle] could not load {BUNDLE_PATH.name}: {type(exc).__name__}: {exc}", flush=True)
         return None
-    return bundle if isinstance(bundle, dict) and bundle.get("version") == BUNDLE_VERSION else None
+    if not (isinstance(bundle, dict) and bundle.get("version") == BUNDLE_VERSION):
+        print("[load_bundle] model file has an unexpected version; retrain required", flush=True)
+        return None
+    return bundle
 
 
 def predict_good_probability(bundle: dict, name: str, d: pd.DataFrame) -> np.ndarray:
